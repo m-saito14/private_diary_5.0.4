@@ -50,3 +50,12 @@ class DiaryCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+class DiarySearchForm(forms.Form):
+    keyword = forms.CharField(label='キーワード', max_length=30)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['keyword'].widget.attrs['class'] = 'form-control col-9'
+        self.fields['keyword'].widget.attrs['placeholder'] = 'キーワードを入力してください'

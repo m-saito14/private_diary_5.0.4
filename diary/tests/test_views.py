@@ -2,21 +2,23 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse_lazy
 
-from .models import Diary
+from ..models import Diary
 
 
 class LoggedInTestCase(TestCase):
     # 各テストクラスで共通の事前準備処理をオーバーライドした独自TestCaseクラス
 
     def setUp(self):
+        #テストメソッド実行前の事前設定
+
         # テストユーザーのパスワード
-        self.password = '<ログインパスワード>'
+        self.password = 'Test12345'
 
         # 各インスタンスメソッドで使うテスト用ユーザーを生成し
         # インスタンス変数に格納しておく
         self.test_user = get_user_model().objects.create_user(
-            username='<ログインユーザー名>'
-            email='<ログインユーザーのメールアドレス>'
+            username='example4',
+            email='example4@example.com',
             password=self.password
         )
 
@@ -53,8 +55,12 @@ class TestDiaryCreateView(LoggedInTestCase):
         # 新規日記作成処理(Post)を実行
         response = self.client.post(reverse_lazy('diary:diary_create'))
 
+        # フォームオブジェクトをレスポンスのコンテキストから取得
+        form = response.context['form']
+
         # 必須フォームフィールドが未入力よりエラーになることを検証
-        self.assertFormError(response, 'form', 'title', 'このフィールドは必須です。')
+        # self.assertFormError(response,'form','title','このフィールドは必須です。')
+        self.assertFormError(form, 'title', 'このフィールドは必須です。')
 
 class TestDiaryUpdateView(LoggedInTestCase):
     # DiaryUpdateView用のテストクラス
@@ -69,7 +75,7 @@ class TestDiaryUpdateView(LoggedInTestCase):
         params = {'title':'タイトル編集後'}
 
         # 日記編集処理(Post)を実行
-        response = self.client.post(reverse_lazy('diary:diary_update', kgargs={'pk': diary.pk})
+        response = self.client.post(reverse_lazy('diary:diary_update', kwargs={'pk': diary.pk}),params)
 
         # 日記詳細ページへのリダイレクトを検証
         self.assertRedirects(response, reverse_lazy('diary:diary_detail', kwargs={'pk': diary.pk}))
@@ -95,7 +101,7 @@ class TestDiaryDeleteView(LoggedInTestCase):
         diary = Diary.objects.create(user=self.test_user, title='タイトル')
 
         # 日記削除処理(Post)を実行
-        response = self.client.post(reverse_lazy('diary:diary_delete', kwprgs={'pk': diary.pk}))
+        response = self.client.post(reverse_lazy('diary:diary_delete', kwargs={'pk': diary.pk}))
 
         # 日記リストページへのリダイレクトを検証
         self.assertRedirects(response, reverse_lazy('diary:diary_list'))
